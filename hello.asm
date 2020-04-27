@@ -1,1 +1,3 @@
-global _start
+global _start 
+
+section .bss
