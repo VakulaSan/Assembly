@@ -10,20 +10,20 @@ section .bss
 number resb 10
 
 section .data 
-msg1 db "Please, enter a number from 1 to 99", 10
+msg1 db "Hello", 10
 msg1_length equ $-msg1
 msg2 db "You have entered number - "
 msg2_length equ $-msg2
 
 section .text
-_start:         mov eax, 4
-                mov ebx, 1
-                mov ecx, msg1
-                mov edx, msg1_length
+_start:         push 5
+again:          call write_on_display
+                
+                              
+                
+
+               
+
+                mov eax, 1
+                mov ebx, 0
                 int 80h
-
-                call read_from_keyboard
-                add esp, 4
-
-                call quit_from_program
-                add esp, 4
