@@ -1,7 +1,8 @@
 global 
 section .bss
 string resb 7
-string_length equ $-string 
+string_length equ $-string
+string2 resb 7                          ; 
 
 section .text
                 push ebp                ;save the ebp 
@@ -39,17 +40,16 @@ continue_division:
                 jmp division  
 
 read_to_create_string:
-                mov eax, string_length
                 mov ecx, 0              ;calculate the length of the string
                 cmp esp, ebp            ;check if we go to a start of the adress of procedure [return adress - 4] = ebp
-                je display
-                pop [string + eax]      ;write the string from the end, because we have got reversed string in stack 123-> 321 from stack
-                dec eax
+                je create_ascii_symbols
+                pop [string + ecx]      ;write the string from the end, because we have got reversed string in stack 123-> 321 from stack
                 inc ecx                 ;!!!! we cannot get get correct eax, because we decrement it after pop operation, so we get eax-1  
                 jmp read_to_create_string
 
-display:        [string - ecx];start of the string
+create_ascii_symbols:
+                [string - ecx]          ;start of the string
                 [string + string_length];end of the string
                 ;now you just have to display the string
-
+                ;sorry, you have to add number 48 to create symbol ASCII
 
