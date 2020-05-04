@@ -1,16 +1,19 @@
 global 
 section .bss
-string resb 7
-string_length equ $-string
-string2 resb 7                          ; 
+string resb 7                           ;variable parameter
+string2 resb 7
+
+section .data
+string2_length db 0                     ;initial value of length of the string
+
 
 section .text
                 push ebp                ;save the ebp 
                 mov ebp, esp            ;get the link to esp. ebp stores just lik of its value
                 mov dword [ebp-4], 0    ;set initial value to check if stack has any value
                 xor edx, edx            ;edx:eax/ecx ; set 0 in edx because edx:eax will be the divisible
-                mov eax, [ebp+8]        ;get the number transfered by the calling procedure
-                mov ecx, 1000000        ;set the digit - YOU LATER CAN SET ANY NUMBER
+                mov eax, [ebp+8]        ;get the number(parameter) transfered by the calling procedure
+                mov ecx, 1000000        ;set the digit to divide - divisor - YOU LATER CAN SET ANY NUMBER
 
 division:       div ecx                 ;get the quotient of the number
                 test eax, eax           ;check if the quotient zero
@@ -35,21 +38,22 @@ continue_division:
                 mov eax, ecx            ;decrement divisor by 10 lower
                 xor edx, edx            ;zero the value of the edx, because edx is part of division operation 
                 div 10  
-                mov ecx, eax            ;set the new digit divisible
+                mov ecx, eax            ;set the new digit divisor
                 mov eax, ebx            ;get the remainder for division operation 
                 jmp division  
 
 read_to_create_string:
                 mov ecx, 0              ;calculate the length of the string
-                cmp esp, ebp            ;check if we go to a start of the adress of procedure [return adress - 4] = ebp
+read_from_stack: 
+                cmp esp, ebp            ;check if we go to a start of the adress of procedure [return adress - 4] = ebp, or we do not have string
                 je create_ascii_symbols
                 pop [string + ecx]      ;write the string from the end, because we have got reversed string in stack 123-> 321 from stack
                 inc ecx                 ;!!!! we cannot get get correct eax, because we decrement it after pop operation, so we get eax-1  
-                jmp read_to_create_string
+                jmp read_from_stack
 
 create_ascii_symbols:
-                [string - ecx]          ;start of the string
+                string2_length equ [string - ecx]          ;start of the string
                 [string + string_length];end of the string
-                ;now you just have to display the string
-                ;sorry, you have to add number 48 to create symbol ASCII
-
+                [string - ecx] + 48 = ASCII ;now you just have to display the string
+                                        ;sorry, you have to add number 48 to create symbol ASCII
+                
