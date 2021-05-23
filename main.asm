@@ -40,18 +40,7 @@ init:   Initialization
 		ClearScreen 0x78
 proceed:
 animation:
-        ldi     R23,    2
 
-		cpi     R23,    0
-		breq    END		
-		dec     R23
-		ldi     ZH,     high(array<<1)
-		ldi     ZL,     low(array<<1)
-        lpm     R26,    Z+
-		lpm     R27,    Z
-		mov     ZH,     R27
-		mov     ZL,     R26
-        rcall delay
 send_data:          
         SendStart
 		SendSLAW 0x78
