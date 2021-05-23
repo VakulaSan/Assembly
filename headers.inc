@@ -1,4 +1,4 @@
-.device ATmega328P
+
 .def   temp       = R16
 .def   graph_data = R20
 .def   temp1      = R21
