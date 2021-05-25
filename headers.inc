@@ -4,6 +4,8 @@
 .def   temp1      = R21
 .def   temp2      = R22
 .def   temp3      = R23
+.def   counter    = R7
+.def   lengh_of_array = R10
 ;.equ   time       = (16000000/     
 .MACRO Initialization
           ldi     temp,   HIGH(RAMEND)
@@ -11,7 +13,7 @@
 		ldi     temp,   LOW(RAMEND)
 		out     SPL,    temp
 		;-------I2C init
-		ldi     temp,   0x0C
+		ldi     temp,   0x07
 		sts     TWBR,   temp
           ldi     temp,   0x00
 		sts     TWSR,   temp
@@ -19,7 +21,7 @@
 		clr     temp
 		sts     UBRR0H, temp
 		ldi     temp,   0x67
-		sts     UBRR0L,  temp
+		sts     UBRR0L, temp
 		ldi     temp,   1<<TXEN0
 		sts     UCSR0B, temp     
 .ENDMACRO 

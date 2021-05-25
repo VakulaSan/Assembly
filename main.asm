@@ -20,7 +20,7 @@ init:   Initialization
 		SendCommand  0x81          ;Set contrast control 00-FF
 	     SendCommand  0xFF
 		SendCommand  0xA4          ;Entire display ON
-		SendCommand  0xA6          ;Set normal inverse display
+		SendCommand  0xA7          ;Set normal inverse display
 		SendCommand  0xD5          ;Set display clock divide ratio/Oscillator frequency
 		SendCommand  0x80
 		SendCommand  0x8D          ;Charge pump command table
@@ -39,15 +39,15 @@ init:   Initialization
 		;------Send DATA AND  !!!DON'T SEND STOP!!! IT WON'T WORK!!!
 		ClearScreen 0x78
 proceed:
-          ldi     R23,    2
+          ldi     R28,    1
 		ldi     temp,   0
 		mov     counter,temp
 animation:
           
           ldi     temp,   0
-		cpi     R23,    0
+		cpi     R28,    0
 		breq    END		
-		dec     R23
+		dec     R28
 		ldi     ZH,     high(array<<1)
 		ldi     ZL,     low(array<<1)
 		add     ZL,     counter
@@ -67,6 +67,7 @@ animation:
           rcall   delay
 		SendStart
 		SendSLAW 0x78
+		
 		ldi     r18,    9         ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
 send:     dec     r18
           breq    animation
@@ -86,28 +87,37 @@ lp:		dec     r19
 		rjmp    lp
 		  	      
 
-		END:    rjmp  END
+		END:    rjmp  proceed
 
 
 
         
-wait:     lds     temp,   TWCR
+wait:     push    temp
+check:    lds     temp,   TWCR
           sbrs    temp,   TWINT
-		rjmp    wait
+		rjmp    check
 		lds     temp,   TWSR 
-		sts     UDR0,   temp
+ 		sts     UDR0,   temp
+		pop     temp
           ret
 		  
 		   
-delay:    ldi     temp1,  2
+delay:    push    temp1
+          push    temp2
+		push    temp3
+
+          ldi     temp1,  17
 lp0:      dec     temp1
           breq    exit
-		ldi     temp2,  5
+		ldi     temp2,  255
 lp2:	     dec     temp2
 		breq    lp0
 		ldi     temp3,  255
 lp3:	     dec     temp3 
 		breq    lp2
 		rjmp    lp3
-exit:     ret 
+exit:     pop     temp3
+          pop     temp2
+		pop     temp1
+          ret 
 .include "Graphical_data.inc"		 
