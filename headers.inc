@@ -19,8 +19,10 @@ send_slaw:
           in      ZL,     SPL
 		in      ZH,     SPH
 		ldd     temp,   Z+3
-		out     DDRC,   temp
-		out     PORTC,  temp
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT
+		sts     TWCR,   temp
+		rcall wait
 		ret
 send_command:
        
@@ -36,10 +38,19 @@ send_command:
 		sts     TWDR,   temp
 		ldi     temp,   1<<TWINT | 1<<TWEN
 		sts     TWCR,   temp
+          sbrs    temp,   TWINT
+		rcall   wait
+		ret 
+send_start:
+          ldi     temp,   1<<TWEN | 1<<TWINT | 1<<TWSTA
+		sts     TWCR,   temp
           rcall   wait
 		ret 
-
-
+send_stop:
+          ldi     temp,   1<<TWEN | 1<<TWINT | 1<<TWSTO
+		sts     TWCR,   temp
+          rcall   wait
+		ret 
 
 .MACRO Initialization
           ldi     temp,   HIGH(RAMEND)
@@ -47,7 +58,7 @@ send_command:
 		ldi     temp,   LOW(RAMEND)
 		out     SPL,    temp
 		;-------I2C init
-		ldi     temp,   0x07
+		ldi     temp,   0x0C
 		sts     TWBR,   temp
           ldi     temp,   0x00
 		sts     TWSR,   temp
@@ -60,13 +71,11 @@ send_command:
 		sts     UCSR0B, temp
 		    
 .ENDMACRO 
+
 .MACRO SendStart
- send_start:
-          ldi     temp,   1<<TWEN | 1<<TWINT | 1<<TWSTA
-		sts     TWCR,   temp
-          rcall   wait
-		ret 
-.ENDMACRO   
+          rcall   send_start
+.ENDMACRO      
+
 .MACRO  SendSLAW
           ldi     temp,   @0
           push    temp
@@ -77,8 +86,38 @@ send_command:
           ldi     temp,   @0
 		push    temp
 		rcall   send_command
-		pop     temp 	
+		pop     temp
+ 		
 .ENDMACRO
 
+.MACRO SendStop
+          rcall   send_stop
+.ENDMACRO  
 
+.MACRO ClearScreen
+clear_screen:
+          rcall send_start
+		ldi     temp,  0x78,
+		push    temp
+		rcall send_slaw
+		pop     temp 
+		ldi     r18,    9             ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
+send1:    dec     r18
+          breq    END
+          ldi     r19,    129
+lp1:	     dec     r19
+          breq    send1
+          ldi     temp,   0xC0
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT 
+		sts     TWCR,   temp
+          rcall wait
+		ldi     temp,   0x00
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT 
+		sts     TWCR,   temp
+		rcall wait
+		rjmp    lp1
+          ret         
+.ENDMACRO   
 
