@@ -158,10 +158,10 @@ exit1:    ret
 		ldi     temp,   0x22
         push    temp
 		rcall   send_command 
-		pop     temp   ;   send set page command
+		pop     temp              ;   send set page command
 		ldi     temp,   @1
         push    temp
-        rcall   send_command    ;   send start page command
+        rcall   send_command      ;   send start page command
         pop     temp
 
 		push    temp1
@@ -171,20 +171,41 @@ exit1:    ret
 		clr     temp2
 		clr     temp3
 		ldi     temp,   @4
+		cpi     temp,   8
+		brlo    next
 		lsr     temp
-		adc     temp1,  temp2   
-		lsr     temp
-		adc     temp1,  temp2
-		lsr     temp            ; dividing by eight /8
-        adc     temp1,  temp2
-		ldi     temp3,  @1
-		add     temp,   temp3   ; add start and divided value for end page
-		cpi     temp1,  0
-		breq    next
-        inc     temp
-next:     
+		brcc    skip
+        inc     temp1
+skip:   lsr     temp
+		brcc    skip1
+		inc     temp1
+skip1:  lsr     temp
+        brcc    skip2
+		inc     temp1
+skip2:  cpi     temp1,  0
+        brne    next
+		dec     temp    
 		
+next:   push    temp
+ 	    rcall   send_command     ;  send stop page command     
+        pop     temp
+    
+		pop     temp3
         pop     temp2
 		pop     temp1
+        
+		ldi     temp,   @2
+		push    temp
+		rcall   send_command
+		pop     temp
+		ldi     temp,   @3
+		push    temp
+		rcall   send_command
+		pop     temp
+
+
+        
+
+
 
 .ENDMACRO
