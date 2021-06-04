@@ -129,10 +129,7 @@ exit:   pop     temp3
 .MACRO ClearScreen 
 clear_screen:
         rcall send_start
-		ldi     temp,  @0
-		push    temp
 		rcall send_slaw
-		pop     temp
 		ldi     r18,    9             ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
 send1:  dec     r18
         breq    proceed
@@ -144,17 +141,17 @@ lp1:	dec     r19
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
         rcall wait
-		ldi     temp,   0xFF
+		ldi     temp,   0x00
 		sts     TWDR,   temp
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
 		rcall wait
-		rjmp    lp1
-exit1:    ret         
+		rjmp    lp1        
 .ENDMACRO   
 .MACRO Display_img ; address,start page, start column, width, height
         rcall   send_start
 		rcall   send_slaw
+		;=======Send command page ...from - to
 		ldi     temp,   0x22
         push    temp
 		rcall   send_command 
@@ -171,8 +168,8 @@ exit1:    ret
 		clr     temp2
 		clr     temp3
 		ldi     temp,   @4
-		cpi     temp,   8
-		brlo    next
+		cpi     temp,   9
+		brlo    next1
 		lsr     temp
 		brcc    skip
         inc     temp1
@@ -186,7 +183,9 @@ skip2:  cpi     temp1,  0
         brne    next
 		dec     temp    
 		
-next:   push    temp
+next:   ldi     temp1, @1
+        add     temp,  temp1
+next1:  push    temp
  	    rcall   send_command     ;  send stop page command     
         pop     temp
     
@@ -198,12 +197,51 @@ next:   push    temp
 		push    temp
 		rcall   send_command
 		pop     temp
-		ldi     temp,   @3
+
+		ldi     temp1,  @3
+		add     temp,   temp1
 		push    temp
 		rcall   send_command
 		pop     temp
+        
+		rcall   send_start
+		rcall   send_slaw
 
-
+		ldi     ZL,     LOW((@0)<<1)
+		ldi     ZH,     HIGH((@0)<<1)
+		push    ZL
+		push    ZH
+		ldi     temp,   @3
+		push    temp
+        ldi     temp,   @4
+        push    temp
+        rcall   send_img
+              
+send_img:
+        in      YH,     SPH
+        in      Yl,     SPL
+		ldd     r18,    Y+3
+send:   dec     r18
+        breq    exit1
+        ldd     r19,   Y+4
+lp:		dec     r19
+        breq    send
+        ldi     temp,   send_data
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT 
+		sts     TWCR,   temp
+        rcall wait
+		
+        ldd     ZH,     Y+5
+		ldd     ZL,     Y+6
+		lpm     temp,   Z+
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT 
+		sts     TWCR,   temp
+		rcall wait
+		rjmp    lp
+exit1:  ret
+		        
         
 
 

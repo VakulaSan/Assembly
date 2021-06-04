@@ -39,58 +39,7 @@ init:   Initialization
 		;------Send DATA AND  !!!DON'T SEND STOP!!! IT WON'T WORK!!!
 		ClearScreen 0x78
 
-proceed:
-        clr     num_of_frames
-		inc     num_of_frames  
-		clr     inc_adresses
-animation:
-        mov     temp,    num_of_frames
-        cpi     temp,    0
-		breq    END		
-		dec     num_of_frames
-	    ldi     ZH,     high(array<<1)
-		ldi     ZL,     low(array<<1)
-		add     ZL,     inc_adresses
-		inc     inc_adresses
-		inc     inc_adresses
-	    push    inc_adresses
-		push    num_of_frames  
-        lpm     R26,    Z+
-		lpm     R27,    Z
-		ldi     temp,   2
-		mul     R26,    temp
-		mov     R26,    R0
-		mov     R19,    R1
-		mul     R27,    temp
-		mov     R27,    R0
-		add     R27,    R19
-		mov     ZH,     R27
-		mov     ZL,     R26
-        rcall   delay
-		pop     num_of_frames
-		pop     inc_adresses
-		SendStart
-		SendSLAW 
-		
-		ldi     r18,    9         ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
-send:   dec     r18
-        breq    animation
-        ldi     r19,    129
-lp:		dec     r19
-        breq    send
-        ldi     temp,   send_data
-		sts     TWDR,   temp
-		ldi     temp,   1<<TWEN | 1<<TWINT 
-		sts     TWCR,   temp
-        rcall wait
-		lpm     temp,   Z+
-		sts     TWDR,   temp
-		ldi     temp,   1<<TWEN | 1<<TWINT 
-		sts     TWCR,   temp
-		rcall wait
-		rjmp    lp
-		  	      
-
+Display_img rain,0, 8, 55, 45
 		END:    rjmp  END
 
 .include "Graphical_data.inc"		 
