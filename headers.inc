@@ -141,7 +141,7 @@ lp1:	dec     r19
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
         rcall wait
-		ldi     temp,   0x00
+		ldi     temp,   0xFF
 		sts     TWDR,   temp
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
@@ -184,8 +184,8 @@ skip2:  cpi     temp1,  0
 		dec     temp    
 		
 next:   ldi     temp1, @1
-        add     temp,  temp1
-next1:  push    temp
+        add     temp1,  temp
+next1:  push    temp1
  	    rcall   send_command     ;  send stop page command     
         pop     temp
     
@@ -193,6 +193,11 @@ next1:  push    temp
         pop     temp2
 		pop     temp1
         
+		ldi     temp,   0x21
+		push    temp
+		rcall   send_command
+		pop     temp
+		
 		ldi     temp,   @2
 		push    temp
 		rcall   send_command
