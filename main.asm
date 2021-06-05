@@ -37,9 +37,9 @@ init:   Initialization
           
 		SendCommand  0xAF
 		;------Send DATA AND  !!!DON'T SEND STOP!!! IT WON'T WORK!!!
-		ClearScreen 
+		ClearScreen 0x78
 proceed:
-Display_img mario12,2, 34,8, 8
+Display_img rain,0, 0, 128, 64; address,start page, start column, width, height
 		END:    rjmp  END
 
 .include "Graphical_data.inc"		 

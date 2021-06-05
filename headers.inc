@@ -92,7 +92,7 @@ exit:   pop     temp3
 		ldi     temp,   LOW(RAMEND)
 		out     SPL,    temp
 		;-------I2C init
-		ldi     temp,   0x0C
+		ldi     temp,   0x06	
 		sts     TWBR,   temp
         ldi     temp,   0x00
 		sts     TWSR,   temp
@@ -193,17 +193,18 @@ next1:  push    temp1
         pop     temp2
 		pop     temp1
         
-		ldi     temp,   0x21
+		ldi     temp,   0x21    ;  set colummn command 
 		push    temp
 		rcall   send_command
 		pop     temp
 		
-		ldi     temp,   @2
+		ldi     temp,   @2       ;  send stop colummn command 
 		push    temp
 		rcall   send_command
 		pop     temp
 
-		ldi     temp1,  @3
+		ldi     temp1,  @3       ;  send stop colummn command 
+		dec     temp1
 		add     temp,   temp1
 		push    temp
 		rcall   send_command
@@ -225,26 +226,28 @@ next1:  push    temp1
 send_img:
         in      YH,     SPH
         in      Yl,     SPL
-		ldd     r18,    Y+3
+		ldd     ZH,     Y+5
+		ldd     ZL,     Y+6
+		ldi     r18,    9
 send:   dec     r18
-        breq    exit1
-        ldd     r19,   Y+4
+        breq    END
+        ldi     r19,    129
 lp:		dec     r19
-        breq    send
+        breq    send 
         ldi     temp,   send_data
 		sts     TWDR,   temp
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
         rcall wait
 		
-        ldd     ZH,     Y+5
-		ldd     ZL,     Y+6
+        
 		lpm     temp,   Z+
 		sts     TWDR,   temp
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
 		rcall wait
 		rjmp    lp
+		
 exit1:  ret
 		        
         
