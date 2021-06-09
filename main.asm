@@ -20,7 +20,7 @@ init:   Initialization
 		SendCommand  0x81          ;Set contrast control 00-FF
 	    SendCommand  0xFF
 		SendCommand  0xA4          ;Entire display ON
-		SendCommand  0xA7          ;Set normal inverse display
+		SendCommand  0xA7         ;Set normal inverse display
 		SendCommand  0xD5          ;Set display clock divide ratio/Oscillator frequency
 		SendCommand  0x80
 		SendCommand  0x8D          ;Charge pump command table
@@ -37,9 +37,16 @@ init:   Initialization
           
 		SendCommand  0xAF
 		;------Send DATA AND  !!!DON'T SEND STOP!!! IT WON'T WORK!!!
-		ClearScreen 0x78
+		ClearScreen 
 proceed:
-Display_img rain,0, 0, 128, 64; address,start page, start column, width, height
+;Display_img wind,0, 66, 59, 50; address,start page, start column, width, height
+Display_img rain,1, 0, 59, 50
+Display_img plus,4, 62, 17, 16
+Display_img two,3, 86, 13, 24
+Display_img seven,3, 101, 13, 24
+Display_img degree,3, 119, 6, 6
+
+
 		END:    rjmp  END
 
 .include "Graphical_data.inc"		 
