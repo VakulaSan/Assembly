@@ -4,7 +4,7 @@
 		ldi     temp,   LOW(RAMEND)
 		out     SPL,    temp
 		;-------I2C init
-		ldi     temp,   0x06	
+		ldi     temp,   I2C_speed	
 		sts     TWBR,   temp
           ldi     temp,   0x00
 		sts     TWSR,   temp
@@ -38,26 +38,7 @@
 .ENDMACRO 
 
 .MACRO ClearScreen 
-clear_screen:
-          rcall send_start
-		rcall send_slaw
-		ldi     r18,    9             ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
-send1:    dec     r18
-          breq    proceed
-          ldi     r19,    129
-lp1:	     dec     r19
-          breq    send1
-          ldi     temp,   send_data
-		sts     TWDR,   temp
-		ldi     temp,   1<<TWEN | 1<<TWINT 
-		sts     TWCR,   temp
-          rcall wait
-		ldi     temp,   0xFF
-		sts     TWDR,   temp
-		ldi     temp,   1<<TWEN | 1<<TWINT 
-		sts     TWCR,   temp
-		rcall wait
-		rjmp    lp1        
+         rcall   clear_screen
 .ENDMACRO   
 
 .MACRO Display_img ; address,start page, start column, width, height

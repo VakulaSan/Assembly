@@ -38,13 +38,15 @@ init:   Initialization
 		SendCommand  0xAF
 		;------Send DATA AND  !!!DON'T SEND STOP!!! IT WON'T WORK!!!
 		ClearScreen 
-proceed:
+
 ;Display_img wind,0, 66, 59, 50; address,start page, start column, width, height
 Display_img rain,2, 0, 59, 50
 Display_img plus, 4, 66, 17, 16
-Display_img two, 3, 88, 13, 24 
-Display_img five, 3, 104, 13, 24
+Display_img one, 3, 88, 9, 24 
+ClearScreen
+Display_img six, 3, 104, 13, 24
 Display_img degree, 3, 122, 6, 6
+
 
 
 

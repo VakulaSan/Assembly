@@ -7,7 +7,7 @@
 .equ send_cmd  = 0x80
 .equ send_data = 0xC0
 .equ SLA_addr  = 0x3C		
-
+.equ I2C_speed = 0xFF
           .cseg
 		rjmp init
 ;=================================
@@ -84,26 +84,79 @@ exit:   pop     temp3
         pop     temp2
 		pop     temp1
         ret
+;============Clear display===================
+clear_screen:
+          rcall send_start
+		rcall send_slaw
+		ldi     temp,   0x20
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x00
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x21
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x00
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x7F
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x22
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x00
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     temp,   0x07
+		push    temp
+		rcall   send_command
+          pop     temp
+		ldi     r18,    9             ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
+send1:    dec     r18
+          breq    ext
+          ldi     r19,    129
+lp1:	     dec     r19
+          breq    send1
+          ldi     temp,   send_data
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT 
+		sts     TWCR,   temp
+          rcall wait
+		ldi     temp,   0xFF
+		sts     TWDR,   temp
+		ldi     temp,   1<<TWEN | 1<<TWINT 
+		sts     TWCR,   temp
+		rcall wait
+		rjmp    lp1
+ext:		ret        
 ;============Output image data to a display== 
 display_img:
-		push    temp
 		push    YL
 		push    YH
-		push    temp
 		in      YH,     SPH
 		in      YL,     SPL
-		
+		push    temp
+
           rcall   send_start
 		rcall   send_slaw
 		ldi     temp,   0x22      
           push    temp
 		rcall   send_command 
 		pop     temp              ;   send set page command
-		ldd     temp,   Y+9
+		ldd     temp,   Y+7
           push    temp
           rcall   send_command      ;   send start page command
           pop     temp
-          ldd     temp,   Y+12
+          ldd     temp,   Y+10
 		push    temp1 
 		push    temp2
           push    temp3
@@ -121,7 +174,7 @@ skip1:    lsr     temp
 		inc     temp1
 skip2:    dec     temp    
 		
-next:     ldd     temp1, Y+9
+next:     ldd     temp1, Y+7
           add     temp,  temp1
 		cpi     temp,  8
 		brlo    next1
@@ -139,12 +192,12 @@ next1:    push    temp
           rcall   send_command
 		pop     temp 
 
-		ldd     temp,   Y+10      
+		ldd     temp,   Y+8      
 		push    temp
 		rcall   send_command     ;  send start colummn command
 		pop     temp
 
-		ldd     temp1,   Y+11
+		ldd     temp1,   Y+9
 		dec     temp        
 		add     temp,   temp1
 		cpi     temp,   128
@@ -157,10 +210,10 @@ sk:		push    temp
 		rcall   send_start
 		rcall   send_slaw
           
-		ldd     ZH,     Y+8
-		ldd     ZL,     Y+7
-		ldd     r19,    Y+11
-		ldd     r18,    Y+12
+		ldd     ZH,     Y+6
+		ldd     ZL,     Y+5
+		ldd     r19,    Y+9
+		ldd     r18,    Y+10
 		lsr     r18
 		lsr     r18
 		lsr     r18
@@ -187,10 +240,9 @@ send_:    subi    r18,    1
 		rcall   wait
 		rjmp    send_
 		
-exit1:    pop     temp1
-          pop     temp
-          pop     r19
-          pop     r18
+exit1:    pop     temp
+          pop     YH
+          pop     YL
           ret
 ;============
 
