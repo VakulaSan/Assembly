@@ -57,7 +57,7 @@ send_start:
         rcall   wait
 		pop     temp
 		ret
-;================================= 
+;=============Send I2C STOP command==================== 
 send_stop:
         push    temp
         ldi     temp,   1<<TWEN | 1<<TWINT | 1<<TWSTO
@@ -65,7 +65,7 @@ send_stop:
         rcall   wait
 		pop     temp
 		ret		
-
+;============Create a delay======================
 delay:  push    temp1
         push    temp2
 		push    temp3
@@ -84,91 +84,32 @@ exit:   pop     temp3
         pop     temp2
 		pop     temp1
         ret
-		;============== 
-
-.MACRO Initialization
-        ldi     temp,   HIGH(RAMEND)
-        out     SPH,    temp
-		ldi     temp,   LOW(RAMEND)
-		out     SPL,    temp
-		;-------I2C init
-		ldi     temp,   0x06	
-		sts     TWBR,   temp
-        ldi     temp,   0x00
-		sts     TWSR,   temp
-        ;-------UART init
-		clr     temp
-		sts     UBRR0H, temp
-		ldi     temp,   0x67
-		sts     UBRR0L, temp
-		ldi     temp,   1<<TXEN0
-		sts     UCSR0B, temp
-		    
-.ENDMACRO 
-
-.MACRO SendStart
-        rcall   send_start
-.ENDMACRO      		
-
-
-.MACRO  SendSLAW
-        rcall send_slaw
-.ENDMACRO   
-.MACRO  SendCommand
-        ldi     temp,   @0
+;============Output image data to a display== 
+display_img:
 		push    temp
-		rcall   send_command
-		pop     temp		
-
- .ENDMACRO
-
-.MACRO SendStop
-        rcall   send_stop
-.ENDMACRO  
-
-.MACRO ClearScreen 
-clear_screen:
-          rcall send_start
-		rcall send_slaw
-		ldi     r18,    9             ; Set pages x = x-1. To set 8 pages you should set 9 e.g.
-send1:    dec     r18
-          breq    proceed
-          ldi     r19,    129
-lp1:	     dec     r19
-          breq    send1
-          ldi     temp,   send_data
-		sts     TWDR,   temp
-		ldi     temp,   1<<TWEN | 1<<TWINT 
-		sts     TWCR,   temp
-          rcall wait
-		ldi     temp,   0xFF
-		sts     TWDR,   temp
-		ldi     temp,   1<<TWEN | 1<<TWINT 
-		sts     TWCR,   temp
-		rcall wait
-		rjmp    lp1        
-.ENDMACRO   
-.MACRO Display_img ; address,start page, start column, width, height
+		push    YL
+		push    YH
+		push    temp
+		in      YH,     SPH
+		in      YL,     SPL
+		
           rcall   send_start
 		rcall   send_slaw
-		;=======Send command page ...from - to
-		ldi     temp,   0x22
+		ldi     temp,   0x22      
           push    temp
 		rcall   send_command 
 		pop     temp              ;   send set page command
-		ldi     temp,   @1
+		ldd     temp,   Y+9
           push    temp
           rcall   send_command      ;   send start page command
           pop     temp
-
-		push    temp1
+          ldd     temp,   Y+12
+		push    temp1 
 		push    temp2
           push    temp3
 		clr     temp1
 		clr     temp2
 		clr     temp3
-		ldi     temp,   @4
-		
 		lsr     temp
 		brcc    skip
           inc     temp1
@@ -178,11 +119,9 @@ skip:     lsr     temp
 skip1:    lsr     temp
           brcc    skip2
 		inc     temp1
-skip2:    ;cpi     temp1,  0
-          ;brne    next
-		dec     temp    
+skip2:    dec     temp    
 		
-next:     ldi     temp1, @1
+next:     ldd     temp1, Y+9
           add     temp,  temp1
 		cpi     temp,  8
 		brlo    next1
@@ -200,12 +139,13 @@ next1:    push    temp
           rcall   send_command
 		pop     temp 
 
-		ldi     temp,   @2       
+		ldd     temp,   Y+10      
 		push    temp
 		rcall   send_command     ;  send start colummn command
 		pop     temp
 
-		ldi     temp1,  @3-1        
+		ldd     temp1,   Y+11
+		dec     temp        
 		add     temp,   temp1
 		cpi     temp,   128
 		brlo    sk
@@ -216,32 +156,11 @@ sk:		push    temp
         
 		rcall   send_start
 		rcall   send_slaw
-
-		ldi     ZL,     LOW((@0)<<1)
-		ldi     ZH,     HIGH((@0)<<1)
-		push    ZL
-		push    ZH
-		ldi     temp,   @3
-		push    temp
-          ldi     temp,   @4
-          push    temp
-          rcall   send_img
-		pop     temp
-		pop     temp
-		pop     ZH
-		pop     ZL
-.ENDMACRO              
-send_img:
-        push    r18
-		push    r19
-		push    temp
-		push    temp1
-        in      YH,     SPH
-        in      Yl,     SPL
-		ldd     ZH,     Y+9
-		ldd     ZL,     Y+10
-		ldd     r19,    Y+8
-		ldd     r18,    Y+7
+          
+		ldd     ZH,     Y+8
+		ldd     ZL,     Y+7
+		ldd     r19,    Y+11
+		ldd     r18,    Y+12
 		lsr     r18
 		lsr     r18
 		lsr     r18
@@ -250,28 +169,7 @@ send_img:
 		ldi     r18,    1
 stp:		mul     r18,    r19
 		movw    r18,    r0
-          
-
-;         ldi     temp1,  0
-; 		lsr     r19
-;         ror     r18
-; 		brcc    nxt
-;         inc     temp1
-; nxt:      lsr     r19
-;           ror     r18
-; 		brcc    nxt1
-; 		inc     temp1
-; nxt1:     lsr     r19
-;           ror     r18
-;           brcc    nxt2
-; 		inc     temp1
-; nxt2:     cpi     temp1,  0
-;           breq    send_
-; 		ldi     temp1,  0
-; 		inc     r18
-; 		adc     r19,    temp1
-		 
-          
+                    
 send_:    subi    r18,    1
           sbci    r19,    0
           brcs    exit1
@@ -281,8 +179,7 @@ send_:    subi    r18,    1
 		ldi     temp,   1<<TWEN | 1<<TWINT 
 		sts     TWCR,   temp
           rcall   wait
-		
-        
+		        
 		lpm     temp,   Z+
 		sts     TWDR,   temp
 		ldi     temp,   1<<TWEN | 1<<TWINT 
@@ -295,3 +192,5 @@ exit1:    pop     temp1
           pop     r19
           pop     r18
           ret
+;============
+

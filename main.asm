@@ -1,7 +1,7 @@
 ;======OLED Screen on SSD1306====
 .device ATmega328P
 .include "headers.inc"
-
+.include "macro.inc"
 		.cseg
           
 init:   Initialization
@@ -40,11 +40,12 @@ init:   Initialization
 		ClearScreen 
 proceed:
 ;Display_img wind,0, 66, 59, 50; address,start page, start column, width, height
-Display_img rain,1, 0, 59, 50
-Display_img plus,4, 62, 17, 16
-Display_img two,3, 86, 13, 24
-Display_img seven,3, 101, 13, 24
-Display_img degree,3, 119, 6, 6
+Display_img rain,2, 0, 59, 50
+Display_img plus, 4, 66, 17, 16
+Display_img two, 3, 88, 13, 24 
+Display_img five, 3, 104, 13, 24
+Display_img degree, 3, 122, 6, 6
+
 
 
 		END:    rjmp  END
