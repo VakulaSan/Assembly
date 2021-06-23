@@ -53,7 +53,7 @@ init:   Initialization
           sts     TIMSK1, temp
           
 
-;Display_img wind,0, 66, 59, 50; address,start page, start column, width, height
+; Display_img wind,0, 66, 59, 50; address,start page, start column, width, height
 Display_img zero_big,1, 0, 27, 48
 Display_img zero_big,1, 27, 27, 48
 Display_img doubledot_big,2, 57, 10, 32
