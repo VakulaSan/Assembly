@@ -327,7 +327,7 @@ cp_dg8:   cpi     dres,    8
 cp_dg9:   ldi     R17,   LOW(nine_big<<1)
           ldi     R18,   HIGH(nine_big<<1)
 ext4:     ret 
-;---------Timer 1 OVERflow Interrupt 
+;=========Timer 1 OVERflow Interrupt 
 TIMER1_OVF:
           ldi     r30,  low(seconds_)
           ldi     r31,  high(seconds_)
@@ -447,4 +447,29 @@ nxt5:     mov     dd,     hours
           pop     temp
           pop     temp 
           reti     
-;-----------------
+;-----------------Timer 1 Compare match
+TIMER1_COMPA:
+          SendCommand  0x21;
+          SendCommand  57
+          SendCommand  67
+          SendCommand  0x22;
+          SendCommand  2
+          SendCommand  5
+          ldi     r30,  low(dots)
+          ldi     r31,  high(dots)
+          ld      R25,  Z
+          cpi     R25,   0
+          brne show_dots
+          ldi     R25,   1
+          ldi     r30,  low(dots)
+          ldi     r31,  high(dots)
+          st      Z,    R25
+          rcall clear_screen
+          rjmp ext_int
+ show_dots:  
+          ldi     R25,  0
+          ldi     r30,  low(dots)
+          ldi     r31,  high(dots)
+          st      Z,    R25
+          Display_img doubledot_big,2, 57, 10, 32
+ ext_int: reti

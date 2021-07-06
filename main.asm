@@ -1,7 +1,8 @@
 ;======OLED Screen on SSD1306====
 .device ATmega328P
-.include "headers.inc"
 .include "macro.inc"
+.include "headers.inc"
+
           
           
 init:   Initialization
@@ -70,32 +71,8 @@ Display_img zero_big,1, 97, 27, 48
 
 
 END:      rjmp  END
-;--------Timer1 COF interrupts
-TIMER1_COMPA:
-          SendCommand  0x21;
-          SendCommand  57
-          SendCommand  67
-          SendCommand  0x22;
-          SendCommand  2
-          SendCommand  5
-          ldi     r30,  low(dots)
-          ldi     r31,  high(dots)
-          ld      R25,  Z
-          cpi     R25,   0
-          brne show_dots
-          ldi     R25,   1
-          ldi     r30,  low(dots)
-          ldi     r31,  high(dots)
-          st      Z,    R25
-          rcall clear_screen
-          rjmp ext_int
- show_dots:  
-          ldi     R25,  0
-          ldi     r30,  low(dots)
-          ldi     r31,  high(dots)
-          st      Z,    R25
-          Display_img doubledot_big,2, 57, 10, 32
- ext_int: reti
+
+
    
 
 .include "Graphical_data.inc"		 
